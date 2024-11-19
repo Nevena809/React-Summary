@@ -1,46 +1,42 @@
-import { useState } from "react";
 import classes from "./NewPost.module.css";
+import Modal from "./Modal";
+import { Form, Link, redirect } from "react-router-dom";
 
-function NewPost({ onCancle, onAddPost }) {
-  const [changeBody, setChangeBody] = useState("");
-  const [changeAuthor, setChangeAuthor] = useState("");
-
-  function changeBodyHandler(event) {
-    setChangeBody(event.target.value);
-  }
-
-  function changeAuthorHandler(event) {
-    setChangeAuthor(event.target.value);
-  }
-
-  function submitHandler(event) {
-    event.preventDefault();
-    const postData = {
-      body: changeBody,
-      author: changeAuthor,
-    };
-    onAddPost(postData);
-    onCancle();
-  }
-
+function NewPost() {
   return (
-    <form className={classes.form} onSubmit={submitHandler}>
-      <p>
-        <label htmlFor="body">Text</label>
-        <textarea id="body" required rows={3} onChange={changeBodyHandler} />
-      </p>
-      <p>
-        <label htmlFor="name">Your name</label>
-        <input type="text" id="name" required onChange={changeAuthorHandler} />
-      </p>
-      <p className={classes.actions}>
-        <button type="button" onClick={onCancle}>
-          Cancel
-        </button>
-        <button>Submit</button>
-      </p>
-    </form>
+    <Modal>
+      <Form method="post" className={classes.form}>
+        <p>
+          <label htmlFor="body">Text</label>
+          <textarea id="body" name="body" required rows={3} />
+        </p>
+        <p>
+          <label htmlFor="name">Your name</label>
+          <input type="text" id="name" name="author" required />
+        </p>
+        <p className={classes.actions}>
+          <Link to="../" type="button">
+            Cancel
+          </Link>
+          <button>Submit</button>
+        </p>
+      </Form>
+    </Modal>
   );
 }
 
 export default NewPost;
+
+export async function action({ request }) {
+  const formData = await request.formData();
+  const postData = Object.fromEntries(formData);
+  await fetch("http://localhost:8080/posts", {
+    method: "POST",
+    body: JSON.stringify(postData),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return redirect("/");
+}
